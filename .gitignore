@@ -6,3 +6,6 @@ target
 pom.xml.old
 pom.xml.orig
 TODOS
+/.classpath
+/.project
+/.settings/

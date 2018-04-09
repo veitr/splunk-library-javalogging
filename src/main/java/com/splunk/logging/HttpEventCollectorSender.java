@@ -126,22 +126,27 @@ final class HttpEventCollectorSender extends TimerTask implements HttpEventColle
     public void addMiddleware(HttpEventCollectorMiddleware.HttpSenderMiddleware middleware) {
         this.middleware.add(middleware);
     }
+    
+    public synchronized void send(final String body) {
+        HttpEventCollectorEventInfo eventInfo =
+                new HttpEventCollectorEventInfo(null, body);
+        eventsBatch.add(eventInfo);
+        eventsBatchSize +=  body.length();
+        if (eventsBatch.size() >= maxEventsBatchCount || eventsBatchSize > maxEventsBatchSize) {
+            flush();
+        }
+    }
 
     /**
      * Send a single logging event
      * @note in case of batching the event isn't sent immediately
      * @param severity event severity level (info, warning, etc.)
      * @param message event text
+     * @deprecated Use send(String) instead, as severity parameter is dropped.
      */
+    @Deprecated
     public synchronized void send(final String severity, final String message) {
-        // create event info container and add it to the batch
-        HttpEventCollectorEventInfo eventInfo =
-                new HttpEventCollectorEventInfo(severity, message);
-        eventsBatch.add(eventInfo);
-        eventsBatchSize += severity.length() + message.length();
-        if (eventsBatch.size() >= maxEventsBatchCount || eventsBatchSize > maxEventsBatchSize) {
-            flush();
-        }
+	send(message);
     }
 
     /**
@@ -197,12 +202,7 @@ final class HttpEventCollectorSender extends TimerTask implements HttpEventColle
             event.put(MetadataSourceTag, source);
         if (sourceType  != null && sourceType.length() > 0)
             event.put(MetadataSourceTypeTag, sourceType);
-        // event body
-        JSONObject body = new JSONObject();
-        body.put("severity", eventInfo.getSeverity());
-        body.put("message", eventInfo.getMessage());
-        // join event and body
-        event.put("event", body);
+        event.put("event", eventInfo.getMessage());
         return event.toString();
     }
 

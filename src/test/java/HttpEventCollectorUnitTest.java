@@ -24,7 +24,6 @@ import com.splunk.logging.HttpEventCollectorErrorHandler;
 import com.splunk.logging.HttpEventCollectorEventInfo;
 import org.junit.Assert;
 import org.junit.Test;
-import sun.rmi.runtime.Log;
 
 import java.io.ByteArrayInputStream;
 import java.util.Date;
